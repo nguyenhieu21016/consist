@@ -40,7 +40,7 @@ export default function Login() {
     <div className={styles.container}>
       <div className={styles.loginBox}>
         <div>
-          <h1 className={`${styles.title} serif-heading`}>Consist</h1>
+          <h1 className={`${styles.title} serif-heading`}>consist</h1>
           <p className={styles.description}>
             The minimalist habit tracker.
           </p>

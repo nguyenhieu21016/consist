@@ -39,7 +39,7 @@ export default function Dashboard({ session }) {
       {/* Sidebar */}
       <aside className={styles.sidebar}>
         <div>
-          <h1 className={`${styles.logo} serif-heading`}>Consist</h1>
+          <h1 className={`${styles.logo} serif-heading`}>consist</h1>
           <nav className={styles.nav}>
             <div className={styles.navItem}>Tất cả thói quen</div>
             <div className={styles.navItem}>Build Habits</div>
