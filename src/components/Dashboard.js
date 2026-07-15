@@ -57,33 +57,25 @@ export default function Dashboard({ session }) {
 
   return (
     <div className={styles.layout}>
-      {/* Sidebar */}
-      <aside className={styles.sidebar}>
-        <div>
-          <div className={styles.logo}>
-            <span>consist</span>
-          </div>
-          <nav className={styles.nav}>
-            <div className={styles.navItem}>Tất cả thói quen</div>
-            <div className={styles.navItem}>Thống kê</div>
-          </nav>
-        </div>
-        <button onClick={handleLogout} className="btn btn-outline" style={{ margin: '0 12px' }}>
-          Đăng xuất
-        </button>
-      </aside>
-
       {/* Main Content */}
       <main className={styles.mainContent}>
         <header className={styles.header}>
           <div className={styles.headerTop}>
-            <h2 className={styles.pageTitle}>Journal</h2>
-            <button 
-              onClick={() => setShowAddModal(true)} 
-              className="btn btn-primary"
-            >
-              <Plus size={18} /> Thêm mới
-            </button>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+              <div className={styles.logoText}>consist</div>
+            </div>
+            
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <button 
+                onClick={() => setShowAddModal(true)} 
+                className="btn btn-primary"
+              >
+                <Plus size={18} /> Thêm mới
+              </button>
+              <button onClick={handleLogout} className="btn btn-outline">
+                Đăng xuất
+              </button>
+            </div>
           </div>
           
           <div className={styles.calendarStrip}>
