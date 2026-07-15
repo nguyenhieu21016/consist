@@ -36,9 +36,9 @@ export default function Heatmap({ logs = [], targetValue = 1, onDayClick }) {
 
   const grid = useMemo(() => {
     const today = new Date();
-    // Go back 365 days
-    const startDate = new Date(today);
-    startDate.setDate(startDate.getDate() - 364);
+    const currentYear = today.getFullYear();
+    const startDate = new Date(currentYear, 0, 1); // Jan 1st
+    const endDate = new Date(currentYear, 11, 31); // Dec 31st
 
     // Adjust to start on a Sunday
     const startDay = startDate.getDay();
@@ -48,14 +48,17 @@ export default function Heatmap({ logs = [], targetValue = 1, onDayClick }) {
     let currentWeek = [];
     let currentDate = new Date(startDate);
 
-    while (currentDate <= today || (currentWeek.length > 0 && currentWeek.length < 7)) {
+    while (currentDate <= endDate || currentWeek.length > 0) {
       if (currentWeek.length === 7) {
         weeks.push(currentWeek);
         currentWeek = [];
       }
       
-      if (currentDate > today) {
-        // Fill the rest of the week with empty if needed
+      if (currentDate > endDate && currentWeek.length === 0) {
+        break;
+      }
+
+      if (currentDate.getFullYear() !== currentYear) {
         currentWeek.push(null);
       } else {
         currentWeek.push(formatDate(currentDate));
@@ -65,6 +68,9 @@ export default function Heatmap({ logs = [], targetValue = 1, onDayClick }) {
     }
     
     if (currentWeek.length > 0) {
+      while (currentWeek.length < 7) {
+        currentWeek.push(null);
+      }
       weeks.push(currentWeek);
     }
     return weeks;
