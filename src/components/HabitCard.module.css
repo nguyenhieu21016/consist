@@ -79,3 +79,16 @@
   padding: 0.5rem 1rem;
   width: 100%;
 }
+
+@media (max-width: 768px) {
+  .card {
+    padding: var(--spacing-md);
+    gap: var(--spacing-md);
+  }
+
+  .stats {
+    flex-wrap: wrap;
+    gap: 1rem;
+    padding: 0.5rem 0.75rem;
+  }
+}
