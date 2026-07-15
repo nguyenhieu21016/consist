@@ -1,0 +1,45 @@
+.heatmapContainer {
+  display: flex;
+  gap: 2px;
+  overflow-x: auto;
+  padding-bottom: 0.5rem;
+  scrollbar-width: thin;
+}
+
+.heatmapContainer::-webkit-scrollbar {
+  height: 4px;
+}
+
+.heatmapContainer::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.heatmapContainer::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 2px;
+}
+
+.week {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.day {
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  background-color: var(--bg-color); /* Claude's cream canvas as the empty state */
+}
+
+/* Color levels for Build */
+.build-level-1 { background-color: rgba(93, 184, 114, 0.3); } /* Claude's success color */
+.build-level-2 { background-color: rgba(93, 184, 114, 0.6); }
+.build-level-3 { background-color: rgba(93, 184, 114, 0.8); }
+.build-level-4 { background-color: var(--build-color); }
+
+/* Color levels for Quit */
+.quit-level-1 { background-color: rgba(198, 69, 69, 0.3); } /* Claude's error color */
+.quit-level-2 { background-color: rgba(198, 69, 69, 0.6); }
+.quit-level-3 { background-color: rgba(198, 69, 69, 0.8); }
+.quit-level-4 { background-color: var(--quit-color); }
