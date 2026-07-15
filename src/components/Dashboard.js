@@ -2,16 +2,38 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import AddHabit from './AddHabit';
-import HabitCard from './HabitCard';
+import HabitRow from './HabitRow';
 import styles from './Dashboard.module.css';
-import { Plus } from 'lucide-react';
+import { Plus, ChevronLeft, ChevronRight } from 'lucide-react';
+
+const getWeekDays = (baseDate) => {
+  const days = [];
+  const current = new Date(baseDate);
+  current.setDate(current.getDate() - 3); // 3 days before
+  for (let i = 0; i < 7; i++) {
+    days.push(new Date(current));
+    current.setDate(current.getDate() + 1);
+  }
+  return days;
+};
 
 export default function Dashboard({ session }) {
   const [habits, setHabits] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showAddModal, setShowAddModal] = useState(false);
-
   const [editHabit, setEditHabit] = useState(null);
+
+  const [baseDate, setBaseDate] = useState(new Date());
+  
+  const getTodayStr = () => {
+    const d = new Date();
+    d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
+    return d.toISOString().split('T')[0];
+  };
+  
+  const [selectedDate, setSelectedDate] = useState(getTodayStr());
+
+  const weekDays = getWeekDays(baseDate);
 
   useEffect(() => {
     fetchHabits();
@@ -54,22 +76,73 @@ export default function Dashboard({ session }) {
       {/* Main Content */}
       <main className={styles.mainContent}>
         <header className={styles.header}>
-          <h2 className={styles.pageTitle}>Dashboard</h2>
-          <button 
-            onClick={() => setShowAddModal(true)} 
-            className="btn btn-primary"
-          >
-            <Plus size={18} /> Thêm thói quen mới
-          </button>
+          <div className={styles.headerTop}>
+            <h2 className={styles.pageTitle}>Journal</h2>
+            <button 
+              onClick={() => setShowAddModal(true)} 
+              className="btn btn-primary"
+            >
+              <Plus size={18} /> Thêm mới
+            </button>
+          </div>
+          
+          <div className={styles.calendarStrip}>
+            <button 
+              className="btn btn-icon"
+              onClick={() => {
+                const newBase = new Date(baseDate);
+                newBase.setDate(newBase.getDate() - 7);
+                setBaseDate(newBase);
+              }}
+            >
+              <ChevronLeft size={20} />
+            </button>
+            
+            <div className={styles.daysList}>
+              {weekDays.map((d, i) => {
+                const dateStr = new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().split('T')[0];
+                const isSelected = dateStr === selectedDate;
+                const isToday = dateStr === getTodayStr();
+                const dayName = d.toLocaleDateString('vi-VN', { weekday: 'short' });
+                
+                return (
+                  <button
+                    key={i}
+                    className={`${styles.dayBtn} ${isSelected ? styles.daySelected : ''} ${isToday && !isSelected ? styles.dayToday : ''}`}
+                    onClick={() => setSelectedDate(dateStr)}
+                  >
+                    <span className={styles.dayName}>{dayName}</span>
+                    <span className={styles.dayNumber}>{d.getDate()}</span>
+                  </button>
+                );
+              })}
+            </div>
+
+            <button 
+              className="btn btn-icon"
+              onClick={() => {
+                const newBase = new Date(baseDate);
+                newBase.setDate(newBase.getDate() + 7);
+                setBaseDate(newBase);
+              }}
+            >
+              <ChevronRight size={20} />
+            </button>
+          </div>
         </header>
 
         <section className={styles.section}>
-          <div className={styles.habitGrid}>
+          <div className={styles.habitList}>
             {loading ? (
               <div>Loading...</div>
             ) : habits.length > 0 ? (
               habits.map(habit => (
-                <HabitCard key={habit.id} habit={habit} onEdit={() => setEditHabit(habit)} />
+                <HabitRow 
+                  key={habit.id} 
+                  habit={habit} 
+                  selectedDate={selectedDate}
+                  onEdit={() => setEditHabit(habit)} 
+                />
               ))
             ) : (
               <div className={styles.emptyState}>
