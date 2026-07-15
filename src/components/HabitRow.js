@@ -76,9 +76,9 @@ export default function HabitRow({ habit, selectedDate, onEdit }) {
 
   return (
     <>
-      <div className={styles.row} onClick={() => setShowDetail(true)}>
+      <div className={`${styles.row} ${hasCheckedIn ? styles.rowCompleted : ''}`} onClick={() => setShowDetail(true)}>
         <div className={styles.info}>
-          <h3 className={styles.title}>{habit.title}</h3>
+          <h3 className={`${styles.title} ${hasCheckedIn ? styles.titleCompleted : ''}`}>{habit.title}</h3>
           <span className={styles.meta}>{habit.target_value} {habit.unit}</span>
         </div>
         

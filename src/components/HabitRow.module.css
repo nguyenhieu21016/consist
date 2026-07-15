@@ -68,3 +68,18 @@
   cursor: not-allowed;
   background: var(--bg-color);
 }
+
+.rowCompleted {
+  opacity: 0.5;
+  background: var(--bg-color);
+  box-shadow: none;
+}
+
+.rowCompleted:hover {
+  opacity: 0.7;
+}
+
+.titleCompleted {
+  text-decoration: line-through;
+  color: var(--text-secondary);
+}
