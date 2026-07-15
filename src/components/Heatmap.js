@@ -1,4 +1,5 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import styles from './Heatmap.module.css';
 
 // Helper to format date as YYYY-MM-DD
@@ -8,7 +9,7 @@ const formatDate = (date) => {
   return d.toISOString().split('T')[0];
 };
 
-export default function Heatmap({ logs = [], type = 'build', targetValue = 1 }) {
+export default function Heatmap({ logs = [], targetValue = 1, onDayClick }) {
   const logMap = useMemo(() => {
     const map = {};
     logs.forEach(log => {
@@ -16,6 +17,22 @@ export default function Heatmap({ logs = [], type = 'build', targetValue = 1 }) 
     });
     return map;
   }, [logs]);
+
+  const [hoveredDay, setHoveredDay] = useState(null);
+  const [tooltipPos, setTooltipPos] = useState({ x: 0, y: 0 });
+  const [isClient, setIsClient] = useState(false);
+  useEffect(() => setIsClient(true), []);
+
+  const handleMouseEnter = (e, day) => {
+    if (!day) return;
+    const rect = e.target.getBoundingClientRect();
+    setTooltipPos({ x: rect.left + rect.width / 2, y: rect.top });
+    setHoveredDay(day);
+  };
+
+  const handleMouseLeave = () => {
+    setHoveredDay(null);
+  };
 
   const grid = useMemo(() => {
     const today = new Date();
@@ -64,7 +81,22 @@ export default function Heatmap({ logs = [], type = 'build', targetValue = 1 }) 
     else if (ratio >= 0.75) level = 3;
     else if (ratio >= 0.5) level = 2;
 
-    return styles[`${type}-level-${level}`];
+    return styles[`build-level-${level}`];
+  };
+
+  const getTodayString = () => {
+    const today = new Date();
+    today.setMinutes(today.getMinutes() - today.getTimezoneOffset());
+    return today.toISOString().split('T')[0];
+  };
+  const todayStr = getTodayString();
+
+  const getTooltip = (dayStr) => {
+    if (!dayStr) return '';
+    const dateObj = new Date(dayStr);
+    const formatted = dateObj.toLocaleDateString('vi-VN', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' });
+    const val = logMap[dayStr] || 0;
+    return `${formatted} \nHoàn thành: ${val} / ${targetValue}`;
   };
 
   return (
@@ -74,12 +106,33 @@ export default function Heatmap({ logs = [], type = 'build', targetValue = 1 }) 
           {week.map((day, j) => (
             <div 
               key={j} 
-              className={`${styles.day} ${getColorClass(day)}`} 
-              title={day ? `${day}: ${logMap[day] || 0}` : ''}
+              className={`${styles.day} ${getColorClass(day)} ${day && day <= todayStr ? styles.clickable : ''}`} 
+              onMouseEnter={(e) => handleMouseEnter(e, day)}
+              onMouseLeave={handleMouseLeave}
+              onClick={() => {
+                if (day && day <= todayStr && onDayClick) {
+                  onDayClick(day);
+                }
+              }}
             />
           ))}
         </div>
       ))}
+      
+      {isClient && hoveredDay && createPortal(
+        <div 
+          className={styles.tooltip}
+          style={{ 
+            left: `${tooltipPos.x}px`, 
+            top: `${tooltipPos.y}px`
+          }}
+        >
+          {getTooltip(hoveredDay).split('\n').map((line, idx) => (
+            <div key={idx}>{line}</div>
+          ))}
+        </div>,
+        document.body
+      )}
     </div>
   );
 }

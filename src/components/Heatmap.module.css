@@ -43,3 +43,34 @@
 .quit-level-2 { background-color: rgba(198, 69, 69, 0.6); }
 .quit-level-3 { background-color: rgba(198, 69, 69, 0.8); }
 .quit-level-4 { background-color: var(--quit-color); }
+
+.clickable {
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.clickable:hover {
+  transform: scale(1.2);
+  box-shadow: 0 0 5px rgba(0,0,0,0.2);
+  z-index: 10;
+  border-radius: 4px;
+}
+
+.tooltip {
+  position: fixed;
+  transform: translate(-50%, calc(-100% - 6px));
+  background-color: var(--surface-color);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+  padding: 6px 12px;
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  font-weight: 500;
+  pointer-events: none;
+  z-index: 1000;
+  white-space: nowrap;
+  text-align: center;
+  line-height: 1.5;
+  box-shadow: rgba(0, 0, 0, 0.05) 0 4px 12px;
+  animation: scaleIn 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}

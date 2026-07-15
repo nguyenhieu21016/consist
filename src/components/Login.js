@@ -39,8 +39,8 @@ export default function Login() {
   return (
     <div className={styles.container}>
       <div className={styles.loginBox}>
-        <div>
-          <h1 className={`${styles.title} serif-heading`}>consist</h1>
+        <div style={{ textAlign: 'center', marginBottom: '1rem' }}>
+          <h1 className={styles.title}>consist</h1>
           <p className={styles.description}>
             The minimalist habit tracker.
           </p>

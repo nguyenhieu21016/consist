@@ -3,9 +3,9 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import Heatmap from './Heatmap';
 import styles from './HabitCard.module.css';
-import { Check, X } from 'lucide-react';
+import { Check, X, Settings } from 'lucide-react';
 
-export default function HabitCard({ habit }) {
+export default function HabitCard({ habit, onEdit }) {
   const [logs, setLogs] = useState([]);
   const [stats, setStats] = useState(habit.habit_stats?.[0] || { current_streak: 0, longest_streak: 0, strength_score: 0 });
   const [loading, setLoading] = useState(false);
@@ -80,11 +80,39 @@ export default function HabitCard({ habit }) {
     setLoading(false);
   };
 
+  const handleToggleDay = async (dateString) => {
+    if (dateString > todayDateStr) return; // Cannot toggle future days
+
+    const existingLog = logs.find(log => log.log_date === dateString);
+    setLoading(true);
+
+    if (existingLog) {
+      const { error } = await supabase.from('habit_logs').delete().eq('id', existingLog.id);
+      if (!error) fetchLogs();
+    } else {
+      const { error } = await supabase.from('habit_logs').insert([
+        { habit_id: habit.id, log_date: dateString, value: habit.target_value }
+      ]);
+      if (!error) fetchLogs();
+    }
+    setLoading(false);
+  };
+
   return (
     <div className={styles.card}>
       <div className={styles.header}>
-        <div>
-          <h3 className={`${styles.title} serif-heading`}>{habit.title}</h3>
+        <div style={{ flex: 1 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+            <h3 className={`${styles.title} serif-heading`}>{habit.title}</h3>
+            <button 
+              className="btn btn-icon" 
+              onClick={onEdit}
+              style={{ padding: '4px', background: 'transparent', color: 'var(--text-secondary)' }}
+              title="Sửa thói quen"
+            >
+              <Settings size={16} />
+            </button>
+          </div>
           <div className={styles.meta}>
             <span>Mục tiêu: {habit.target_value} {habit.unit}</span>
           </div>
@@ -94,7 +122,7 @@ export default function HabitCard({ habit }) {
       <div className={styles.stats}>
         <div className={styles.statItem}>
           <span className={styles.statLabel}>Streak:</span>
-          <span className={styles.statValue} style={{ color: habit.type === 'build' ? 'var(--build-color)' : 'var(--quit-color)' }}>
+          <span className={styles.statValue} style={{ color: 'var(--build-color)' }}>
             {stats.current_streak}
           </span>
         </div>
@@ -104,7 +132,7 @@ export default function HabitCard({ habit }) {
         </div>
       </div>
 
-      <Heatmap logs={logs} type={habit.type} targetValue={habit.target_value} />
+      <Heatmap logs={logs} targetValue={habit.target_value} onDayClick={handleToggleDay} />
 
       <div className={styles.actions}>
         {hasCheckedInToday ? (
@@ -115,23 +143,13 @@ export default function HabitCard({ habit }) {
           >
             Hoàn tác
           </button>
-        ) : habit.type === 'build' ? (
+        ) : (
           <button 
             className={`btn btn-primary ${styles.checkBtn}`}
             onClick={() => handleCheckIn(habit.target_value)}
             disabled={loading}
           >
             <Check size={16} /> Hoàn thành
-          </button>
-        ) : (
-          <button 
-            className={`btn btn-outline ${styles.checkBtn}`}
-            onClick={() => handleCheckIn(1)}
-            disabled={loading}
-            title="Ghi nhận tái phạm"
-            style={{ color: 'var(--quit-color)' }}
-          >
-            <X size={16} /> Lỡ tái phạm
           </button>
         )}
       </div>

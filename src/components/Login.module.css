@@ -4,7 +4,7 @@
   align-items: center;
   justify-content: center;
   padding: 1rem;
-  background-color: var(--surface-dark);
+  background-color: var(--bg-color);
 }
 
 .loginBox {
@@ -16,14 +16,16 @@
   gap: 32px;
   background: var(--surface-color);
   border-radius: var(--radius-lg);
-  box-shadow: rgba(0, 0, 0, 0.1) 0px 10px 50px;
+  box-shadow: rgba(0, 0, 0, 0.05) 0 23px 52px;
+  animation: scaleIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
 }
 
 .title {
   font-size: 2.5rem;
-  font-weight: 400;
+  font-weight: 700;
+  letter-spacing: -1px;
   margin-bottom: 0.5rem;
-  color: var(--primary);
+  color: var(--text-primary);
   text-align: center;
 }
 
@@ -47,4 +49,10 @@
   font-size: 14px;
   font-weight: 500;
   border: 1px solid var(--border-color);
+}
+
+@media (max-width: 768px) {
+  .loginBox {
+    padding: 24px;
+  }
 }

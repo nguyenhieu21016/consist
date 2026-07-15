@@ -11,6 +11,8 @@ export default function Dashboard({ session }) {
   const [loading, setLoading] = useState(true);
   const [showAddModal, setShowAddModal] = useState(false);
 
+  const [editHabit, setEditHabit] = useState(null);
+
   useEffect(() => {
     fetchHabits();
   }, []);
@@ -31,23 +33,20 @@ export default function Dashboard({ session }) {
     await supabase.auth.signOut();
   };
 
-  const buildHabits = habits.filter(h => h.type === 'build');
-  const quitHabits = habits.filter(h => h.type === 'quit');
-
   return (
     <div className={styles.layout}>
       {/* Sidebar */}
       <aside className={styles.sidebar}>
         <div>
-          <h1 className={`${styles.logo} serif-heading`}>consist</h1>
+          <div className={styles.logo}>
+            <span>consist</span>
+          </div>
           <nav className={styles.nav}>
             <div className={styles.navItem}>Tất cả thói quen</div>
-            <div className={styles.navItem}>Build Habits</div>
-            <div className={styles.navItem}>Quit Habits</div>
             <div className={styles.navItem}>Thống kê</div>
           </nav>
         </div>
-        <button onClick={handleLogout} className="btn btn-outline" style={{ color: 'var(--text-on-dark)', borderColor: 'rgba(255,255,255,0.2)' }}>
+        <button onClick={handleLogout} className="btn btn-outline" style={{ margin: '0 12px' }}>
           Đăng xuất
         </button>
       </aside>
@@ -55,7 +54,7 @@ export default function Dashboard({ session }) {
       {/* Main Content */}
       <main className={styles.mainContent}>
         <header className={styles.header}>
-          <h2 className={`${styles.pageTitle} serif-heading`}>Dashboard</h2>
+          <h2 className={styles.pageTitle}>Dashboard</h2>
           <button 
             onClick={() => setShowAddModal(true)} 
             className="btn btn-primary"
@@ -65,13 +64,12 @@ export default function Dashboard({ session }) {
         </header>
 
         <section className={styles.section}>
-          <h3 className={`${styles.sectionTitle} serif-heading`}>Build Habits</h3>
           <div className={styles.habitGrid}>
             {loading ? (
               <div>Loading...</div>
-            ) : buildHabits.length > 0 ? (
-              buildHabits.map(habit => (
-                <HabitCard key={habit.id} habit={habit} />
+            ) : habits.length > 0 ? (
+              habits.map(habit => (
+                <HabitCard key={habit.id} habit={habit} onEdit={() => setEditHabit(habit)} />
               ))
             ) : (
               <div className={styles.emptyState}>
@@ -81,29 +79,22 @@ export default function Dashboard({ session }) {
           </div>
         </section>
 
-        <section className={styles.section}>
-          <h3 className={`${styles.sectionTitle} serif-heading`}>Quit Habits</h3>
-          <div className={styles.habitGrid}>
-            {loading ? (
-              <div>Loading...</div>
-            ) : quitHabits.length > 0 ? (
-              quitHabits.map(habit => (
-                <HabitCard key={habit.id} habit={habit} />
-              ))
-            ) : (
-              <div className={styles.emptyState}>
-                Chưa có thói quen xấu nào cần bỏ.
-              </div>
-            )}
-          </div>
-        </section>
-
-        {showAddModal && (
+        {(showAddModal || editHabit) && (
           <AddHabit 
             session={session} 
-            onClose={() => setShowAddModal(false)} 
+            habitToEdit={editHabit}
+            onClose={() => {
+              setShowAddModal(false);
+              setEditHabit(null);
+            }} 
             onHabitAdded={(newHabit) => {
               setHabits([{...newHabit, habit_stats: [{current_streak: 0, longest_streak: 0, strength_score: 0}]}, ...habits]);
+            }}
+            onHabitUpdated={(updatedHabit) => {
+              setHabits(habits.map(h => h.id === updatedHabit.id ? { ...h, ...updatedHabit } : h));
+            }}
+            onHabitDeleted={(deletedId) => {
+              setHabits(habits.filter(h => h.id !== deletedId));
             }}
           />
         )}

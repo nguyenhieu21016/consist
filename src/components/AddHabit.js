@@ -3,36 +3,74 @@ import { useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import styles from './AddHabit.module.css';
 
-export default function AddHabit({ session, onClose, onHabitAdded }) {
-  const [title, setTitle] = useState('');
-  const [type, setType] = useState('build');
-  const [unit, setUnit] = useState('times');
-  const [targetValue, setTargetValue] = useState(1);
+export default function AddHabit({ session, onClose, onHabitAdded, habitToEdit, onHabitUpdated, onHabitDeleted }) {
+  const isEditMode = !!habitToEdit;
+  const [title, setTitle] = useState(habitToEdit?.title || '');
+  const [unit, setUnit] = useState(habitToEdit?.unit || 'times');
+  const [targetValue, setTargetValue] = useState(habitToEdit?.target_value || 1);
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
 
-    const { data, error } = await supabase
-      .from('habits')
-      .insert([
-        {
-          user_id: session.user.id,
+    if (isEditMode) {
+      const { data, error } = await supabase
+        .from('habits')
+        .update({
           title,
-          type,
+          type: 'build',
           unit,
           target_value: targetValue,
-          schedule_type: 'daily',
-        }
-      ])
-      .select();
+        })
+        .eq('id', habitToEdit.id)
+        .select();
 
+      setLoading(false);
+      if (error) {
+        alert(error.message);
+      } else {
+        if (onHabitUpdated) onHabitUpdated(data[0]);
+        onClose();
+      }
+    } else {
+      const { data, error } = await supabase
+        .from('habits')
+        .insert([
+          {
+            user_id: session.user.id,
+            title,
+            type: 'build',
+            unit,
+            target_value: targetValue,
+            schedule_type: 'daily',
+          }
+        ])
+        .select();
+
+      setLoading(false);
+      if (error) {
+        alert(error.message);
+      } else {
+        if (onHabitAdded) onHabitAdded(data[0]);
+        onClose();
+      }
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!confirm('Bạn có chắc chắn muốn xóa thói quen này không? Toàn bộ dữ liệu lịch sử sẽ bị xóa.')) return;
+    setLoading(true);
+    const { error } = await supabase
+      .from('habits')
+      .delete()
+      .eq('id', habitToEdit.id);
+    
     setLoading(false);
     if (error) {
       alert(error.message);
     } else {
-      onHabitAdded(data[0]);
+      if (onHabitDeleted) onHabitDeleted(habitToEdit.id);
       onClose();
     }
   };
@@ -41,7 +79,9 @@ export default function AddHabit({ session, onClose, onHabitAdded }) {
     <div className={styles.overlay}>
       <div className={styles.modal}>
         <div className={styles.header}>
-          <h2 className={`${styles.title} serif-heading`}>Thêm Thói quen mới</h2>
+          <h2 className={`${styles.title} serif-heading`}>
+            {isEditMode ? 'Sửa Thói quen' : 'Thêm Thói quen mới'}
+          </h2>
           <button onClick={onClose} className={styles.closeBtn}>&times;</button>
         </div>
         
@@ -56,32 +96,6 @@ export default function AddHabit({ session, onClose, onHabitAdded }) {
               placeholder="Ví dụ: Đọc sách 30 phút"
               required
             />
-          </div>
-
-          <div className={styles.formGroup}>
-            <label className={styles.label}>Loại</label>
-            <div className={styles.radioGroup}>
-              <label className={styles.radioLabel}>
-                <input 
-                  type="radio" 
-                  name="type" 
-                  value="build" 
-                  checked={type === 'build'} 
-                  onChange={(e) => setType(e.target.value)} 
-                />
-                Build (Muốn xây)
-              </label>
-              <label className={styles.radioLabel}>
-                <input 
-                  type="radio" 
-                  name="type" 
-                  value="quit" 
-                  checked={type === 'quit'} 
-                  onChange={(e) => setType(e.target.value)} 
-                />
-                Quit (Muốn bỏ)
-              </label>
-            </div>
           </div>
 
           <div className={styles.formGroup}>
@@ -110,9 +124,22 @@ export default function AddHabit({ session, onClose, onHabitAdded }) {
             />
           </div>
 
-          <button type="submit" className="btn btn-primary" disabled={loading}>
-            {loading ? 'Đang lưu...' : 'Lưu thói quen'}
-          </button>
+          <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
+            <button type="submit" className="btn btn-primary" style={{ flex: 1 }} disabled={loading}>
+              {loading ? 'Đang lưu...' : 'Lưu lại'}
+            </button>
+            {isEditMode && (
+              <button 
+                type="button" 
+                className="btn btn-outline" 
+                style={{ color: 'var(--quit-color)' }}
+                onClick={handleDelete}
+                disabled={loading}
+              >
+                Xóa
+              </button>
+            )}
+          </div>
         </form>
       </div>
     </div>

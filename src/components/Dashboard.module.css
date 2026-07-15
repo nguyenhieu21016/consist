@@ -5,21 +5,30 @@
 }
 
 .sidebar {
-  width: 280px;
-  background-color: var(--surface-dark);
-  color: var(--text-on-dark);
-  padding: 2rem;
+  width: 260px;
+  background-color: var(--bg-color);
+  color: var(--text-primary);
+  padding: 2rem 1rem;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   flex-shrink: 0;
-  border-right: 1px solid rgba(255, 255, 255, 0.1);
+  border-right: 1px solid var(--border-color);
 }
 
 .logo {
-  font-size: 2.5rem;
-  margin-bottom: 3rem;
-  color: var(--primary);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin-bottom: 2rem;
+  padding: 0 12px;
+}
+
+.logo img {
+  width: 24px;
+  height: 24px;
 }
 
 .nav {
@@ -30,24 +39,24 @@
 }
 
 .navItem {
-  padding: 0.75rem 1rem;
-  border-radius: var(--radius-md);
+  padding: 8px 12px;
+  border-radius: var(--radius-sm);
   font-weight: 500;
+  font-size: 14px;
   cursor: pointer;
   transition: background 0.2s;
-  color: var(--text-on-dark);
-  opacity: 0.8;
+  color: var(--text-secondary);
 }
 
 .navItem:hover {
-  background-color: rgba(255, 255, 255, 0.05);
-  opacity: 1;
+  background-color: var(--hover-bg);
+  color: var(--text-primary);
 }
 
 .mainContent {
   flex-grow: 1;
-  padding: 4rem;
-  background-color: var(--bg-color);
+  padding: 4rem 6rem;
+  background-color: var(--surface-color);
   overflow-y: auto;
 }
 
@@ -85,4 +94,47 @@
   border: 1px dashed var(--border-color);
   border-radius: var(--radius-lg);
   font-size: 1.125rem;
+}
+
+@media (max-width: 768px) {
+  .layout {
+    flex-direction: column;
+  }
+  
+  .sidebar {
+    width: 100%;
+    padding: 1rem;
+    border-right: none;
+    border-bottom: 1px solid var(--border-color);
+    flex-direction: row;
+    align-items: center;
+  }
+  
+  .logo {
+    margin-bottom: 0;
+  }
+  
+  .nav {
+    display: none;
+  }
+  
+  .mainContent {
+    padding: 1.5rem;
+  }
+  
+  .header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+    margin-bottom: 2rem;
+  }
+  
+  .pageTitle {
+    font-size: 2rem;
+  }
+  
+  .habitGrid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
 }
