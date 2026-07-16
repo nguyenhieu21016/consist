@@ -1,90 +1,144 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import styles from './Heatmap.module.css';
 
+// Helper to format date as YYYY-MM-DD
+const formatDate = (date) => {
+  const d = new Date(date);
+  d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
+  return d.toISOString().split('T')[0];
+};
+
 export default function Heatmap({ logs = [], targetValue = 1, onDayClick }) {
-  const [grid, setGrid] = useState([]);
-  const [logMap, setLogMap] = useState({});
-  const containerRef = useRef(null);
-
-  useEffect(() => {
-    // Generate data structure for 1 year
-    const today = new Date();
-    // Normalize today to local midnight
-    today.setHours(0, 0, 0, 0);
-
-    const yearData = [];
-    const weeks = 52;
-    const daysInYear = weeks * 7;
-    
-    // Start date is exactly 'daysInYear - 1' days ago
-    const startDate = new Date(today);
-    startDate.setDate(today.getDate() - (daysInYear - 1));
-
-    let currentWeek = [];
-    
-    for (let i = 0; i < daysInYear; i++) {
-      const d = new Date(startDate);
-      d.setDate(startDate.getDate() + i);
-      const dateStr = d.toLocaleDateString('en-CA');
-      
-      currentWeek.push(dateStr);
-      
-      if (currentWeek.length === 7) {
-        yearData.push(currentWeek);
-        currentWeek = [];
-      }
-    }
-    
-    setGrid(yearData);
-  }, []);
-
-  useEffect(() => {
-    if (containerRef.current) {
-      containerRef.current.scrollLeft = containerRef.current.scrollWidth;
-    }
-  }, [grid]);
-
-  useEffect(() => {
-    const lMap = {};
+  const logMap = useMemo(() => {
+    const map = {};
     logs.forEach(log => {
-      lMap[log.log_date] = (lMap[log.log_date] || 0) + (log.value || 1);
+      map[log.log_date] = Number(log.value);
     });
-    setLogMap(lMap);
+    return map;
   }, [logs]);
 
-  const getColorClass = (dateStr) => {
-    if (!dateStr) return '';
-    const val = logMap[dateStr] || 0;
-    if (val === 0) return '';
-    
-    const percentage = val / targetValue;
-    
-    if (percentage >= 1) return styles['build-level-4'];
-    if (percentage >= 0.75) return styles['build-level-3'];
-    if (percentage >= 0.5) return styles['build-level-2'];
-    return styles['build-level-1'];
+  const [hoveredDay, setHoveredDay] = useState(null);
+  const [tooltipPos, setTooltipPos] = useState({ x: 0, y: 0 });
+  const [isClient, setIsClient] = useState(false);
+  useEffect(() => setIsClient(true), []);
+
+  const handleMouseEnter = (e, day) => {
+    if (!day) return;
+    const rect = e.target.getBoundingClientRect();
+    setTooltipPos({ x: rect.left + rect.width / 2, y: rect.top });
+    setHoveredDay(day);
   };
 
-  const todayStr = new Date(new Date().getTime() - new Date().getTimezoneOffset() * 60000).toISOString().split('T')[0];
+  const handleMouseLeave = () => {
+    setHoveredDay(null);
+  };
+
+  const grid = useMemo(() => {
+    const today = new Date();
+    const currentYear = today.getFullYear();
+    const startDate = new Date(currentYear, 0, 1); // Jan 1st
+    const endDate = new Date(currentYear, 11, 31); // Dec 31st
+
+    // Adjust to start on a Sunday
+    const startDay = startDate.getDay();
+    startDate.setDate(startDate.getDate() - startDay);
+
+    const weeks = [];
+    let currentWeek = [];
+    let currentDate = new Date(startDate);
+
+    while (currentDate <= endDate || currentWeek.length > 0) {
+      if (currentWeek.length === 7) {
+        weeks.push(currentWeek);
+        currentWeek = [];
+      }
+      
+      if (currentDate > endDate && currentWeek.length === 0) {
+        break;
+      }
+
+      if (currentDate.getFullYear() !== currentYear) {
+        currentWeek.push(null);
+      } else {
+        currentWeek.push(formatDate(currentDate));
+      }
+      
+      currentDate.setDate(currentDate.getDate() + 1);
+    }
+    
+    if (currentWeek.length > 0) {
+      while (currentWeek.length < 7) {
+        currentWeek.push(null);
+      }
+      weeks.push(currentWeek);
+    }
+    return weeks;
+  }, []);
+
+  const getColorClass = (dateString) => {
+    if (!dateString) return '';
+    const val = logMap[dateString];
+    if (val === undefined || val === 0) return ''; // No activity
+
+    const ratio = val / targetValue;
+    let level = 1;
+    if (ratio >= 1) level = 4;
+    else if (ratio >= 0.75) level = 3;
+    else if (ratio >= 0.5) level = 2;
+
+    return styles[`build-level-${level}`];
+  };
+
+  const getTodayString = () => {
+    const today = new Date();
+    today.setMinutes(today.getMinutes() - today.getTimezoneOffset());
+    return today.toISOString().split('T')[0];
+  };
+  const todayStr = getTodayString();
+
+  const getTooltip = (dayStr) => {
+    if (!dayStr) return '';
+    const dateObj = new Date(dayStr);
+    const formatted = dateObj.toLocaleDateString('vi-VN', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' });
+    const val = logMap[dayStr] || 0;
+    return `${formatted} \nHoàn thành: ${val} / ${targetValue}`;
+  };
 
   return (
-    <div className={styles.heatmapContainer} ref={containerRef}>
+    <div className={styles.heatmapContainer}>
       {grid.map((week, i) => (
         <div key={i} className={styles.week}>
           {week.map((day, j) => (
             <div 
               key={j} 
               className={`${styles.day} ${getColorClass(day)} ${day && day <= todayStr ? styles.clickable : ''}`} 
+              onMouseEnter={(e) => handleMouseEnter(e, day)}
+              onMouseLeave={handleMouseLeave}
               onClick={() => {
                 if (day && day <= todayStr && onDayClick) {
                   onDayClick(day);
                 }
               }}
-              title={day ? `${new Date(day).toLocaleDateString('vi-VN')} - Hoàn thành: ${logMap[day] || 0}/${targetValue}` : ''}
             />
           ))}
         </div>
       ))}
+      
+      {isClient && hoveredDay && createPortal(
+        <div 
+          className={styles.tooltip}
+          style={{ 
+            left: `${tooltipPos.x}px`, 
+            top: `${tooltipPos.y}px`
+          }}
+        >
+          {getTooltip(hoveredDay).split('\n').map((line, idx) => (
+            <div key={idx}>{line}</div>
+          ))}
+        </div>,
+        document.body
+      )}
     </div>
   );
 }

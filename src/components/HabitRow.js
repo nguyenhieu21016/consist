@@ -1,14 +1,15 @@
 "use client";
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
-import styles from './HabitItem.module.css';
-import { Check, Settings } from 'lucide-react';
-import Heatmap from './Heatmap';
+import styles from './HabitRow.module.css';
+import { Check, MoreHorizontal } from 'lucide-react';
+import HabitDetailModal from './HabitDetailModal';
 
-export default function HabitItem({ habit, selectedDate, onEdit }) {
+export default function HabitRow({ habit, selectedDate, onEdit }) {
   const [logs, setLogs] = useState([]);
   const [stats, setStats] = useState(habit.habit_stats?.[0] || { current_streak: 0, longest_streak: 0, strength_score: 0 });
   const [loading, setLoading] = useState(false);
+  const [showDetail, setShowDetail] = useState(false);
 
   useEffect(() => {
     fetchLogs();
@@ -18,7 +19,7 @@ export default function HabitItem({ habit, selectedDate, onEdit }) {
     const today = new Date();
     today.setMinutes(today.getMinutes() - today.getTimezoneOffset());
     const thirtyDaysAgo = new Date(today);
-    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 365); 
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 365); // Fetch year for heatmap
 
     const { data, error } = await supabase
       .from('habit_logs')
@@ -73,44 +74,15 @@ export default function HabitItem({ habit, selectedDate, onEdit }) {
     setLoading(false);
   };
 
-  const handleDayClick = async (dateString) => {
-    if (dateString > todayDateStr) return; // Cannot toggle future days
-
-    const existingLog = logs.find(log => log.log_date === dateString);
-    setLoading(true);
-
-    if (existingLog) {
-      const { error } = await supabase.from('habit_logs').delete().eq('id', existingLog.id);
-      if (!error) fetchLogs();
-    } else {
-      const { error } = await supabase.from('habit_logs').insert([
-        { habit_id: habit.id, log_date: dateString, value: habit.target_value }
-      ]);
-      if (!error) fetchLogs();
-    }
-    setLoading(false);
-  };
-
   return (
-    <div className={`${styles.card} ${hasCheckedIn ? styles.cardCompleted : ''}`}>
-      <div className={styles.header}>
-        <div className={styles.iconBox}>
-          {/* Default icon if none provided */}
-          <span role="img" aria-label="icon">🌿</span>
-        </div>
+    <>
+      <div className={`${styles.row} ${hasCheckedIn ? styles.rowCompleted : ''}`} onClick={() => setShowDetail(true)}>
         <div className={styles.info}>
           <h3 className={`${styles.title} ${hasCheckedIn ? styles.titleCompleted : ''}`}>{habit.title}</h3>
-          <span className={styles.meta}>{habit.target_value} {habit.unit} • Streak: {stats.current_streak}</span>
+          <span className={styles.meta}>{habit.target_value} {habit.unit}</span>
         </div>
+        
         <div className={styles.actions}>
-          <button 
-            className="btn btn-icon" 
-            onClick={onEdit}
-            title="Sửa thói quen"
-            style={{ marginRight: '8px', opacity: 0.5 }}
-          >
-            <Settings size={18} />
-          </button>
           <button 
             className={`${styles.checkCircle} ${hasCheckedIn ? styles.checked : ''} ${isFuture ? styles.disabled : ''}`}
             onClick={handleToggle}
@@ -120,10 +92,20 @@ export default function HabitItem({ habit, selectedDate, onEdit }) {
           </button>
         </div>
       </div>
-      
-      <div className={styles.heatmapWrapper}>
-        <Heatmap logs={logs} targetValue={habit.target_value} onDayClick={handleDayClick} />
-      </div>
-    </div>
+
+      {showDetail && (
+        <HabitDetailModal
+          habit={habit}
+          logs={logs}
+          stats={stats}
+          onClose={() => setShowDetail(false)}
+          onEdit={() => {
+            setShowDetail(false);
+            onEdit();
+          }}
+          onLogsChanged={fetchLogs}
+        />
+      )}
+    </>
   );
 }

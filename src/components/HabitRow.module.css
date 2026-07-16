@@ -1,0 +1,85 @@
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  background: var(--surface-color);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: background 0.2s, box-shadow 0.2s;
+  animation: fadeIn 0.3s ease-out forwards;
+}
+
+.row:hover {
+  background: var(--bg-color);
+  box-shadow: rgba(0, 0, 0, 0.02) 0 2px 8px;
+}
+
+.info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.title {
+  font-weight: 600;
+  font-size: 1rem;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.meta {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+}
+
+.checkCircle {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 2px solid var(--border-color);
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--surface-color);
+  transition: all 0.2s;
+  padding: 0;
+}
+
+.checkCircle:hover:not(.disabled) {
+  border-color: var(--text-secondary);
+}
+
+.checkCircle.checked {
+  background: var(--text-primary);
+  border-color: var(--text-primary);
+}
+
+.checkCircle.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background: var(--bg-color);
+}
+
+.rowCompleted {
+  opacity: 0.5;
+  background: var(--bg-color);
+  box-shadow: none;
+}
+
+.rowCompleted:hover {
+  opacity: 0.7;
+}
+
+.titleCompleted {
+  text-decoration: line-through;
+  color: var(--text-secondary);
+}
