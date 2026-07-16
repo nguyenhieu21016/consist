@@ -1,22 +1,7 @@
 .heatmapContainer {
   display: flex;
   gap: 2px;
-  overflow-x: auto;
-  padding-bottom: 0.5rem;
-  scrollbar-width: thin;
-}
-
-.heatmapContainer::-webkit-scrollbar {
-  height: 4px;
-}
-
-.heatmapContainer::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.heatmapContainer::-webkit-scrollbar-thumb {
-  background: var(--border-color);
-  border-radius: 2px;
+  width: max-content;
 }
 
 .week {
@@ -26,23 +11,17 @@
 }
 
 .day {
-  width: 10px;
-  height: 10px;
+  width: 8px;
+  height: 8px;
   border-radius: 2px;
-  background-color: var(--bg-color); /* Claude's cream canvas as the empty state */
+  background-color: var(--border-color); /* Lighter gray for empty state */
 }
 
 /* Color levels for Build */
-.build-level-1 { background-color: rgba(93, 184, 114, 0.3); } /* Claude's success color */
+.build-level-1 { background-color: rgba(93, 184, 114, 0.3); } 
 .build-level-2 { background-color: rgba(93, 184, 114, 0.6); }
 .build-level-3 { background-color: rgba(93, 184, 114, 0.8); }
 .build-level-4 { background-color: var(--build-color); }
-
-/* Color levels for Quit */
-.quit-level-1 { background-color: rgba(198, 69, 69, 0.3); } /* Claude's error color */
-.quit-level-2 { background-color: rgba(198, 69, 69, 0.6); }
-.quit-level-3 { background-color: rgba(198, 69, 69, 0.8); }
-.quit-level-4 { background-color: var(--quit-color); }
 
 .clickable {
   cursor: pointer;
@@ -54,23 +33,4 @@
   box-shadow: 0 0 5px rgba(0,0,0,0.2);
   z-index: 10;
   border-radius: 4px;
-}
-
-.tooltip {
-  position: fixed;
-  transform: translate(-50%, calc(-100% - 6px));
-  background-color: var(--surface-color);
-  color: var(--text-primary);
-  border: 1px solid var(--border-color);
-  padding: 6px 12px;
-  border-radius: var(--radius-sm);
-  font-size: 12px;
-  font-weight: 500;
-  pointer-events: none;
-  z-index: 1000;
-  white-space: nowrap;
-  text-align: center;
-  line-height: 1.5;
-  box-shadow: rgba(0, 0, 0, 0.05) 0 4px 12px;
-  animation: scaleIn 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
 }

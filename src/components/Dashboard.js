@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import AddHabit from './AddHabit';
-import HabitRow from './HabitRow';
+import HabitItem from './HabitItem';
 import styles from './Dashboard.module.css';
 import { Plus, ChevronLeft, ChevronRight } from 'lucide-react';
 
@@ -129,7 +129,7 @@ export default function Dashboard({ session }) {
               <div>Loading...</div>
             ) : habits.length > 0 ? (
               habits.map(habit => (
-                <HabitRow 
+                <HabitItem 
                   key={habit.id} 
                   habit={habit} 
                   selectedDate={selectedDate}
