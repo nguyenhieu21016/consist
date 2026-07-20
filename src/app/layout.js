@@ -9,6 +9,10 @@ export const metadata = {
   title: "consist",
   description: "Minimalist habit tracker",
   manifest: "/manifest.json",
+  icons: {
+    icon: "/icon.svg",
+    apple: "/icon.svg",
+  },
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
