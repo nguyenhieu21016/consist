@@ -161,6 +161,10 @@
     height: 40px;
     border-radius: 8px;
   }
+
+  .heatmapWrapper {
+    justify-content: flex-start;
+  }
 }
 
 @keyframes slideInUp {
