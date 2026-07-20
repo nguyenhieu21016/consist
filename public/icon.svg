@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
-  <!-- Flat Yellow square background -->
-  <rect x="0" y="0" width="512" height="512" fill="#facc15"/>
+  <!-- Yellow background with rounded corners and no border outline -->
+  <rect x="0" y="0" width="512" height="512" rx="100" fill="#facc15"/>
   <!-- Sharp checkmark with mitered corners and square endpoints, matching Space Grotesk font geometry -->
   <path d="M140 265 L220 345 L372 175" fill="none" stroke="#000000" stroke-width="52" stroke-linecap="square" stroke-linejoin="miter"/>
 </svg>
