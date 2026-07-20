@@ -1,20 +1,20 @@
 :root {
-  --bg-color: #f6f5f4;
+  --bg-color: #faf8f5;
   --surface-color: #ffffff;
-  --surface-dark: #213183;
+  --surface-dark: #1a1a1a;
   
   --text-primary: #000000;
-  --text-secondary: #615d59;
+  --text-secondary: #4b5563;
   --text-on-dark: #ffffff;
   
-  --border-color: #e6e6e6;
-  --hover-bg: rgba(0,0,0,0.05);
+  --border-color: #000000;
+  --hover-bg: rgba(0,0,0,0.04);
   
-  --primary: #0075de;
-  --primary-active: #005bab;
+  --primary: #facc15;
+  --primary-active: #e2b80d;
   
-  --build-color: #1aae39;
-  --quit-color: #dd5b00;
+  --build-color: #10b981;
+  --quit-color: #ef4444;
   
   --radius-sm: 5px;
   --radius-md: 8px;
@@ -36,15 +36,15 @@
 body {
   background-color: var(--bg-color);
   color: var(--text-primary);
-  font-family: var(--font-inter), -apple-system, system-ui, "Segoe UI", Helvetica, Arial, sans-serif;
+  font-family: var(--font-space-grotesk), -apple-system, system-ui, "Segoe UI", Helvetica, Arial, sans-serif;
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
 }
 
 h1, h2, h3, h4, .serif-heading {
-  font-family: var(--font-inter), -apple-system, system-ui, sans-serif;
-  font-weight: 700;
-  letter-spacing: -1px;
+  font-family: var(--font-space-grotesk), -apple-system, system-ui, sans-serif;
+  font-weight: 800;
+  letter-spacing: -0.8px;
 }
 
 a {
@@ -62,57 +62,65 @@ button {
 
 .btn {
   padding: 12px 20px;
-  height: 40px;
-  border-radius: var(--radius-md);
+  height: 42px;
+  border-radius: 14px;
   font-size: 14px;
-  font-weight: 500;
-  transition: background-color 0.2s ease, transform 0.1s ease;
+  font-weight: 700;
+  transition: transform 0.1s ease, box-shadow 0.1s ease, background-color 0.2s ease;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
-  border: 1px solid transparent;
+  border: 3px solid #1a1a1a;
+  box-shadow: 2px 2px 0px #1a1a1a;
+}
+
+.btn:hover {
+  transform: translate(-1px, -1px);
+  box-shadow: 3px 3px 0px #1a1a1a;
 }
 
 .btn:active {
-  transform: scale(0.98);
+  transform: translate(1px, 1px);
+  box-shadow: 1px 1px 0px #1a1a1a;
 }
 
 .btn-primary {
-  background-color: var(--primary);
-  color: #ffffff;
+  background-color: #ffe066;
+  color: #1a1a1a;
 }
 
 .btn-primary:hover {
-  background-color: var(--primary-active);
+  background-color: #ffd84d;
 }
 
 .btn-outline {
-  border: 1px solid var(--border-color);
-  background-color: transparent;
-  color: var(--text-primary);
+  background-color: #ffffff;
+  color: #1a1a1a;
 }
 
 .btn-outline:hover {
-  background-color: var(--hover-bg);
+  background-color: #f7f7f7;
 }
 
 /* Base Form Inputs */
 .input-base {
   width: 100%;
   padding: 10px 14px;
-  height: 40px;
-  border-radius: var(--radius-md);
-  border: 1px solid var(--border-color);
-  background: var(--bg-color);
-  color: var(--text-primary);
+  height: 42px;
+  border-radius: 14px;
+  border: 3px solid #1a1a1a;
+  background: #ffffff;
+  color: #1a1a1a;
   font-size: 16px;
+  font-weight: 600;
   outline: none;
-  transition: border-color 0.2s;
+  transition: all 0.2s;
 }
 
 .input-base:focus {
-  border-color: var(--primary);
+  background: #fffdf5;
+  box-shadow: 2px 2px 0px #1a1a1a;
 }
 
 @keyframes fadeIn {

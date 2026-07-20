@@ -29,31 +29,19 @@
   width: 10px;
   height: 10px;
   border-radius: 2px;
-  background-color: var(--bg-color); /* Claude's cream canvas as the empty state */
+  border: 1px solid #000000;
+  background-color: #fafafa;
+  transition: transform 0.1s, box-shadow 0.1s;
 }
-
-/* Color levels for Build */
-.build-level-1 { background-color: rgba(93, 184, 114, 0.3); } /* Claude's success color */
-.build-level-2 { background-color: rgba(93, 184, 114, 0.6); }
-.build-level-3 { background-color: rgba(93, 184, 114, 0.8); }
-.build-level-4 { background-color: var(--build-color); }
-
-/* Color levels for Quit */
-.quit-level-1 { background-color: rgba(198, 69, 69, 0.3); } /* Claude's error color */
-.quit-level-2 { background-color: rgba(198, 69, 69, 0.6); }
-.quit-level-3 { background-color: rgba(198, 69, 69, 0.8); }
-.quit-level-4 { background-color: var(--quit-color); }
 
 .clickable {
   cursor: pointer;
-  transition: all 0.2s ease;
 }
 
 .clickable:hover {
-  transform: scale(1.2);
-  box-shadow: 0 0 5px rgba(0,0,0,0.2);
+  transform: translate(-1px, -1px);
+  box-shadow: 2px 2px 0px #000000;
   z-index: 10;
-  border-radius: 4px;
 }
 
 .tooltip {

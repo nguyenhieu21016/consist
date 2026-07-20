@@ -13,6 +13,7 @@ CREATE TABLE IF NOT EXISTS public.habits (
     schedule_days jsonb, -- e.g., [1,2,3,4,5,6,0] for days of week
     color text, -- For custom heatmap color
     category text,
+    description text,
     created_at timestamp with time zone DEFAULT now()
 );
 

@@ -130,7 +130,7 @@ export default function Dashboard({ session }) {
             ) : habits.length > 0 ? (
               habits.map(habit => (
                 <HabitRow 
-                  key={habit.id} 
+                  key={`${habit.id}-${selectedDate}`} 
                   habit={habit} 
                   selectedDate={selectedDate}
                   onEdit={() => setEditHabit(habit)} 

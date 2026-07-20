@@ -6,8 +6,10 @@ import styles from './AddHabit.module.css';
 export default function AddHabit({ session, onClose, onHabitAdded, habitToEdit, onHabitUpdated, onHabitDeleted }) {
   const isEditMode = !!habitToEdit;
   const [title, setTitle] = useState(habitToEdit?.title || '');
+  const [description, setDescription] = useState(habitToEdit?.description || '');
   const [unit, setUnit] = useState(habitToEdit?.unit || 'times');
   const [targetValue, setTargetValue] = useState(habitToEdit?.target_value || 1);
+  const [color, setColor] = useState(habitToEdit?.color || '#10b981');
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e) => {
@@ -22,6 +24,8 @@ export default function AddHabit({ session, onClose, onHabitAdded, habitToEdit, 
           type: 'build',
           unit,
           target_value: targetValue,
+          description,
+          color,
         })
         .eq('id', habitToEdit.id)
         .select();
@@ -44,6 +48,8 @@ export default function AddHabit({ session, onClose, onHabitAdded, habitToEdit, 
             unit,
             target_value: targetValue,
             schedule_type: 'daily',
+            description,
+            color,
           }
         ])
         .select();
@@ -99,6 +105,17 @@ export default function AddHabit({ session, onClose, onHabitAdded, habitToEdit, 
           </div>
 
           <div className={styles.formGroup}>
+            <label className={styles.label}>Mô tả</label>
+            <textarea 
+              value={description} 
+              onChange={(e) => setDescription(e.target.value)}
+              className="input-base"
+              placeholder="Ví dụ: Đi bộ 30 phút buổi sáng để sảng khoái tinh thần"
+              style={{ height: '80px', resize: 'vertical' }}
+            />
+          </div>
+
+          <div className={styles.formGroup}>
             <label className={styles.label}>Đơn vị đo</label>
             <select 
               value={unit} 
@@ -122,6 +139,29 @@ export default function AddHabit({ session, onClose, onHabitAdded, habitToEdit, 
               min="1"
               required
             />
+          </div>
+
+          <div className={styles.formGroup}>
+            <label className={styles.label}>Màu sắc hiển thị</label>
+            <div className={styles.colorSelector}>
+              {[
+                { name: 'Emerald', value: '#10b981' },
+                { name: 'Purple', value: '#8b5cf6' },
+                { name: 'Red', value: '#ef4444' },
+                { name: 'Orange', value: '#f97316' },
+                { name: 'Blue', value: '#3b82f6' },
+                { name: 'Teal', value: '#06b6d4' }
+              ].map((c) => (
+                <button
+                  key={c.value}
+                  type="button"
+                  className={`${styles.colorDot} ${color === c.value ? styles.colorDotSelected : ''}`}
+                  style={{ backgroundColor: c.value }}
+                  onClick={() => setColor(c.value)}
+                  title={c.name}
+                />
+              ))}
+            </div>
           </div>
 
           <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>

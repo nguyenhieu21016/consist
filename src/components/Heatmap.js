@@ -9,7 +9,7 @@ const formatDate = (date) => {
   return d.toISOString().split('T')[0];
 };
 
-export default function Heatmap({ logs = [], targetValue = 1, onDayClick }) {
+export default function Heatmap({ logs = [], targetValue = 1, onDayClick, weeksCount, color }) {
   const logMap = useMemo(() => {
     const map = {};
     logs.forEach(log => {
@@ -36,6 +36,30 @@ export default function Heatmap({ logs = [], targetValue = 1, onDayClick }) {
 
   const grid = useMemo(() => {
     const today = new Date();
+    
+    if (weeksCount) {
+      const dayOfWeek = today.getDay();
+      const endDate = new Date(today);
+      endDate.setDate(today.getDate() + (6 - dayOfWeek));
+      
+      const startDate = new Date(endDate);
+      startDate.setDate(endDate.getDate() - (weeksCount * 7 - 1));
+
+      const weeks = [];
+      let currentWeek = [];
+      let currentDate = new Date(startDate);
+
+      while (currentDate <= endDate) {
+        currentWeek.push(formatDate(currentDate));
+        if (currentWeek.length === 7) {
+          weeks.push(currentWeek);
+          currentWeek = [];
+        }
+        currentDate.setDate(currentDate.getDate() + 1);
+      }
+      return weeks;
+    }
+
     const currentYear = today.getFullYear();
     const startDate = new Date(currentYear, 0, 1); // Jan 1st
     const endDate = new Date(currentYear, 11, 31); // Dec 31st
@@ -74,20 +98,24 @@ export default function Heatmap({ logs = [], targetValue = 1, onDayClick }) {
       weeks.push(currentWeek);
     }
     return weeks;
-  }, []);
+  }, [weeksCount]);
 
-  const getColorClass = (dateString) => {
-    if (!dateString) return '';
+  const getColorStyle = (dateString) => {
+    if (!dateString) return {};
     const val = logMap[dateString];
-    if (val === undefined || val === 0) return ''; // No activity
+    if (val === undefined || val === 0) return {};
 
     const ratio = val / targetValue;
-    let level = 1;
-    if (ratio >= 1) level = 4;
-    else if (ratio >= 0.75) level = 3;
-    else if (ratio >= 0.5) level = 2;
+    let opacity = 0.25;
+    if (ratio >= 1) opacity = 1.0;
+    else if (ratio >= 0.75) opacity = 0.75;
+    else if (ratio >= 0.5) opacity = 0.5;
 
-    return styles[`build-level-${level}`];
+    const baseColor = color || '#10b981';
+    return {
+      backgroundColor: baseColor,
+      opacity: opacity
+    };
   };
 
   const getTodayString = () => {
@@ -112,7 +140,8 @@ export default function Heatmap({ logs = [], targetValue = 1, onDayClick }) {
           {week.map((day, j) => (
             <div 
               key={j} 
-              className={`${styles.day} ${getColorClass(day)} ${day && day <= todayStr ? styles.clickable : ''}`} 
+              className={`${styles.day} ${day && day <= todayStr ? styles.clickable : ''}`} 
+              style={getColorStyle(day)}
               onMouseEnter={(e) => handleMouseEnter(e, day)}
               onMouseLeave={handleMouseLeave}
               onClick={() => {

@@ -2,8 +2,9 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import styles from './HabitRow.module.css';
-import { Check, MoreHorizontal } from 'lucide-react';
+import { Check, Plus } from 'lucide-react';
 import HabitDetailModal from './HabitDetailModal';
+import Heatmap from './Heatmap';
 
 export default function HabitRow({ habit, selectedDate, onEdit }) {
   const [logs, setLogs] = useState([]);
@@ -33,10 +34,9 @@ export default function HabitRow({ habit, selectedDate, onEdit }) {
     }
   };
 
+  const todayDateStr = new Date(new Date().getTime() - new Date().getTimezoneOffset() * 60000).toISOString().split('T')[0];
   const selectedLog = logs.find(log => log.log_date === selectedDate);
   const hasCheckedIn = !!selectedLog;
-
-  const todayDateStr = new Date(new Date().getTime() - new Date().getTimezoneOffset() * 60000).toISOString().split('T')[0];
   const isFuture = selectedDate > todayDateStr;
 
   const handleToggle = async (e) => {
@@ -48,7 +48,7 @@ export default function HabitRow({ habit, selectedDate, onEdit }) {
     if (hasCheckedIn) {
       const { error } = await supabase.from('habit_logs').delete().eq('id', selectedLog.id);
       if (!error) {
-        fetchLogs();
+        await fetchLogs();
         if (selectedDate === todayDateStr) {
           setStats({
             ...stats,
@@ -61,7 +61,7 @@ export default function HabitRow({ habit, selectedDate, onEdit }) {
         { habit_id: habit.id, log_date: selectedDate, value: habit.target_value }
       ]);
       if (!error) {
-        fetchLogs();
+        await fetchLogs();
         if (selectedDate === todayDateStr) {
           setStats({
             ...stats,
@@ -74,22 +74,68 @@ export default function HabitRow({ habit, selectedDate, onEdit }) {
     setLoading(false);
   };
 
+  const handleToggleDay = async (dateString) => {
+    if (dateString > todayDateStr) return;
+
+    const existingLog = logs.find(log => log.log_date === dateString);
+    setLoading(true);
+
+    if (existingLog) {
+      const { error } = await supabase.from('habit_logs').delete().eq('id', existingLog.id);
+      if (!error) {
+        await fetchLogs();
+      }
+    } else {
+      const { error } = await supabase.from('habit_logs').insert([
+        { habit_id: habit.id, log_date: dateString, value: habit.target_value }
+      ]);
+      if (!error) {
+        await fetchLogs();
+      }
+    }
+    setLoading(false);
+  };
+
   return (
     <>
-      <div className={`${styles.row} ${hasCheckedIn ? styles.rowCompleted : ''}`} onClick={() => setShowDetail(true)}>
-        <div className={styles.info}>
-          <h3 className={`${styles.title} ${hasCheckedIn ? styles.titleCompleted : ''}`}>{habit.title}</h3>
-          <span className={styles.meta}>{habit.target_value} {habit.unit}</span>
+      <div className={styles.card} onClick={() => setShowDetail(true)}>
+        <div className={styles.cardHeader}>
+          <div className={styles.info}>
+            <h3 className={styles.title}>{habit.title}</h3>
+            {habit.description ? (
+              <p className={styles.description}>{habit.description}</p>
+            ) : (
+              <p className={styles.description}>Mục tiêu: {habit.target_value} {habit.unit}</p>
+            )}
+          </div>
+          
+          <div className={styles.actions}>
+            <button 
+              className={`${styles.checkBtn} ${hasCheckedIn ? styles.checked : ''} ${isFuture ? styles.disabled : ''}`}
+              onClick={handleToggle}
+              disabled={loading || isFuture}
+              style={{
+                backgroundColor: hasCheckedIn ? (habit.color || '#10b981') : 'rgba(0, 0, 0, 0.02)',
+                borderColor: '#000000',
+              }}
+            >
+              {hasCheckedIn ? (
+                <Check size={18} strokeWidth={3} className={styles.checkIcon} />
+              ) : (
+                <Plus size={20} strokeWidth={3.5} style={{ color: habit.color || '#10b981' }} />
+              )}
+            </button>
+          </div>
         </div>
         
-        <div className={styles.actions}>
-          <button 
-            className={`${styles.checkCircle} ${hasCheckedIn ? styles.checked : ''} ${isFuture ? styles.disabled : ''}`}
-            onClick={handleToggle}
-            disabled={loading || isFuture}
-          >
-            {hasCheckedIn && <Check size={16} strokeWidth={3} />}
-          </button>
+        <div className={styles.heatmapWrapper} onClick={(e) => e.stopPropagation()}>
+          <Heatmap 
+            logs={logs} 
+            targetValue={habit.target_value} 
+            weeksCount={24} 
+            color={habit.color} 
+            onDayClick={handleToggleDay} 
+          />
         </div>
       </div>
 
