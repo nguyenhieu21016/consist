@@ -1,6 +1,8 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
-  <!-- Yellow background with rounded corners and no border outline -->
-  <rect x="0" y="0" width="512" height="512" rx="100" fill="#facc15"/>
-  <!-- Sharp checkmark with mitered corners and square endpoints, matching Space Grotesk font geometry -->
-  <path d="M140 265 L220 345 L372 175" fill="none" stroke="#000000" stroke-width="52" stroke-linecap="square" stroke-linejoin="miter"/>
+  <!-- Neo-brutalism Hard Shadow -->
+  <rect x="88" y="88" width="360" height="360" rx="64" fill="#000000"/>
+  <!-- Neo-brutalism Green Card Container with Thick Black Border -->
+  <rect x="44" y="44" width="360" height="360" rx="64" fill="#10b981" stroke="#000000" stroke-width="24"/>
+  <!-- Crisp White Checkmark -->
+  <path d="M140 225 L215 300 L310 170" fill="none" stroke="#ffffff" stroke-width="46" stroke-linecap="round" stroke-linejoin="round"/>
 </svg>
