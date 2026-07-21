@@ -2,11 +2,12 @@
   display: flex;
   gap: 2.5px;
   width: 100%;
-  justify-content: center;
+  justify-content: flex-start;
   align-items: center;
   overflow-x: auto;
   scrollbar-width: none;
   padding-top: 4px;
+  padding-bottom: 4px;
 }
 
 .heatmapContainer::-webkit-scrollbar {
@@ -26,12 +27,7 @@
   border: 1px solid #000000;
   background-color: #ffffff;
   transition: transform 0.1s, box-shadow 0.1s;
-}
-
-.beforeCreated {
-  background-color: transparent !important;
-  border: 1px dashed rgba(0, 0, 0, 0.15) !important;
-  opacity: 0.25;
+  flex-shrink: 0;
 }
 
 .clickable {

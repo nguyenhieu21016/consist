@@ -8,7 +8,7 @@ const formatDate = (date) => {
   return d.toISOString().split('T')[0];
 };
 
-export default function Heatmap({ logs = [], targetValue = 1, onDayClick, weeksCount = 18, color, createdAt }) {
+export default function Heatmap({ logs = [], targetValue = 1, onDayClick, weeksCount = 22, color, createdAt }) {
   const logMap = useMemo(() => {
     const map = {};
     logs.forEach(log => {
@@ -25,12 +25,12 @@ export default function Heatmap({ logs = [], targetValue = 1, onDayClick, weeksC
     setIsClient(true);
   }, []);
 
-  const handleMouseEnter = (e, dayObj) => {
-    if (!dayObj || !dayObj.ymd || dayObj.isBeforeCreated) return;
+  const handleMouseEnter = (e, dayStr) => {
+    if (!dayStr) return;
     if (typeof window !== 'undefined' && window.matchMedia('(max-width: 768px)').matches) return;
     const rect = e.target.getBoundingClientRect();
     setTooltipPos({ x: rect.left + rect.width / 2, y: rect.top });
-    setHoveredDay(dayObj.ymd);
+    setHoveredDay(dayStr);
   };
 
   const handleMouseLeave = () => {
@@ -39,27 +39,32 @@ export default function Heatmap({ logs = [], targetValue = 1, onDayClick, weeksC
 
   const grid = useMemo(() => {
     const today = new Date();
-    const dayOfWeek = today.getDay();
-    const endDate = new Date(today);
-    endDate.setDate(today.getDate() + (6 - dayOfWeek)); // Saturday of current week
+    
+    // Determine start date: Sunday of the week createdAt falls in, or fallback
+    let startDate;
+    if (createdAt) {
+      const createdDate = new Date(createdAt);
+      startDate = new Date(createdDate);
+      startDate.setDate(createdDate.getDate() - createdDate.getDay());
+    } else {
+      const dayOfWeek = today.getDay();
+      const endOfWeek = new Date(today);
+      endOfWeek.setDate(today.getDate() + (6 - dayOfWeek));
+      startDate = new Date(endOfWeek);
+      startDate.setDate(endOfWeek.getDate() - ((weeksCount || 22) * 7 - 1));
+    }
 
-    const countOfWeeks = weeksCount || 18;
-    const startDate = new Date(endDate);
-    startDate.setDate(endDate.getDate() - (countOfWeeks * 7 - 1));
+    const countOfWeeks = weeksCount || 22;
+    const endDate = new Date(startDate);
+    endDate.setDate(startDate.getDate() + (countOfWeeks * 7 - 1));
 
-    const createdYMD = createdAt ? formatDate(createdAt) : null;
     const weeks = [];
     let currentWeek = [];
     let currentDate = new Date(startDate);
 
     while (currentDate <= endDate) {
       const ymd = formatDate(currentDate);
-      const isBeforeCreated = createdYMD && ymd < createdYMD;
-
-      currentWeek.push({
-        ymd,
-        isBeforeCreated
-      });
+      currentWeek.push(ymd);
 
       if (currentWeek.length === 7) {
         weeks.push(currentWeek);
@@ -68,12 +73,19 @@ export default function Heatmap({ logs = [], targetValue = 1, onDayClick, weeksC
       currentDate.setDate(currentDate.getDate() + 1);
     }
 
+    if (currentWeek.length > 0) {
+      while (currentWeek.length < 7) {
+        currentWeek.push(null);
+      }
+      weeks.push(currentWeek);
+    }
+
     return weeks;
   }, [createdAt, weeksCount]);
 
-  const getColorStyle = (dayObj) => {
-    if (!dayObj || dayObj.isBeforeCreated) return {};
-    const val = logMap[dayObj.ymd];
+  const getColorStyle = (dateString) => {
+    if (!dateString) return {};
+    const val = logMap[dateString];
     if (val === undefined || val === 0) return {};
 
     const ratio = val / targetValue;
@@ -104,14 +116,14 @@ export default function Heatmap({ logs = [], targetValue = 1, onDayClick, weeksC
     return `${formatted} \nHoàn thành: ${val} / ${targetValue}`;
   };
 
-  const handleCellClick = (e, dayObj) => {
+  const handleCellClick = (e, dayStr) => {
     // Prevent accidental toggles on mobile / touch screens (< 768px)
     if (typeof window !== 'undefined' && window.matchMedia('(max-width: 768px)').matches) {
       return;
     }
 
-    if (dayObj && !dayObj.isBeforeCreated && dayObj.ymd <= todayStr && onDayClick) {
-      onDayClick(dayObj.ymd);
+    if (dayStr && dayStr <= todayStr && onDayClick) {
+      onDayClick(dayStr);
     }
   };
 
@@ -119,18 +131,17 @@ export default function Heatmap({ logs = [], targetValue = 1, onDayClick, weeksC
     <div className={styles.heatmapContainer}>
       {grid.map((week, i) => (
         <div key={i} className={styles.week}>
-          {week.map((dayObj, j) => {
-            const isClickable = dayObj && !dayObj.isBeforeCreated && dayObj.ymd <= todayStr;
-            const isBefore = dayObj?.isBeforeCreated;
+          {week.map((dayStr, j) => {
+            const isClickable = dayStr && dayStr <= todayStr;
 
             return (
               <div 
                 key={j} 
-                className={`${styles.day} ${isBefore ? styles.beforeCreated : ''} ${isClickable ? styles.clickable : ''}`} 
-                style={getColorStyle(dayObj)}
-                onMouseEnter={(e) => handleMouseEnter(e, dayObj)}
+                className={`${styles.day} ${isClickable ? styles.clickable : ''}`} 
+                style={getColorStyle(dayStr)}
+                onMouseEnter={(e) => handleMouseEnter(e, dayStr)}
                 onMouseLeave={handleMouseLeave}
-                onClick={(e) => handleCellClick(e, dayObj)}
+                onClick={(e) => handleCellClick(e, dayStr)}
               />
             );
           })}

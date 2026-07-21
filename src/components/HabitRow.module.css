@@ -162,7 +162,7 @@
   scrollbar-width: none; /* Firefox */
   padding-top: 4px;
   display: flex;
-  justify-content: center;
+  justify-content: flex-start;
 }
 
 .heatmapWrapper::-webkit-scrollbar {
