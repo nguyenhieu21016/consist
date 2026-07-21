@@ -1,28 +1,22 @@
 .heatmapContainer {
   display: flex;
-  gap: 2px;
+  gap: 2.5px;
+  width: 100%;
+  justify-content: center;
+  align-items: center;
   overflow-x: auto;
-  padding-bottom: 0.5rem;
-  scrollbar-width: thin;
+  scrollbar-width: none;
+  padding-top: 4px;
 }
 
 .heatmapContainer::-webkit-scrollbar {
-  height: 4px;
-}
-
-.heatmapContainer::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.heatmapContainer::-webkit-scrollbar-thumb {
-  background: var(--border-color);
-  border-radius: 2px;
+  display: none;
 }
 
 .week {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 2.5px;
 }
 
 .day {
@@ -30,8 +24,14 @@
   height: 10px;
   border-radius: 2px;
   border: 1px solid #000000;
-  background-color: #fafafa;
+  background-color: #ffffff;
   transition: transform 0.1s, box-shadow 0.1s;
+}
+
+.beforeCreated {
+  background-color: transparent !important;
+  border: 1px dashed rgba(0, 0, 0, 0.15) !important;
+  opacity: 0.25;
 }
 
 .clickable {
