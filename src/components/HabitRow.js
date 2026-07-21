@@ -158,7 +158,7 @@ export default function HabitRow({ habit, selectedDate, onEdit, onLogsChanged })
           <Heatmap 
             logs={logs} 
             targetValue={habit.target_value} 
-            weeksCount={24} 
+            createdAt={habit.created_at}
             color={habit.color} 
             onDayClick={handleToggleDay} 
           />

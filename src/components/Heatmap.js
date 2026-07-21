@@ -9,7 +9,7 @@ const formatDate = (date) => {
   return d.toISOString().split('T')[0];
 };
 
-export default function Heatmap({ logs = [], targetValue = 1, onDayClick, weeksCount, color }) {
+export default function Heatmap({ logs = [], targetValue = 1, onDayClick, weeksCount, color, createdAt }) {
   const logMap = useMemo(() => {
     const map = {};
     logs.forEach(log => {
@@ -21,10 +21,15 @@ export default function Heatmap({ logs = [], targetValue = 1, onDayClick, weeksC
   const [hoveredDay, setHoveredDay] = useState(null);
   const [tooltipPos, setTooltipPos] = useState({ x: 0, y: 0 });
   const [isClient, setIsClient] = useState(false);
-  useEffect(() => setIsClient(true), []);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   const handleMouseEnter = (e, day) => {
     if (!day) return;
+    // Don't show tooltip on touch screens to prevent interference
+    if (typeof window !== 'undefined' && window.matchMedia('(max-width: 768px)').matches) return;
     const rect = e.target.getBoundingClientRect();
     setTooltipPos({ x: rect.left + rect.width / 2, y: rect.top });
     setHoveredDay(day);
@@ -36,69 +41,63 @@ export default function Heatmap({ logs = [], targetValue = 1, onDayClick, weeksC
 
   const grid = useMemo(() => {
     const today = new Date();
+    const dayOfWeek = today.getDay();
+    const endDate = new Date(today);
+    endDate.setDate(today.getDate() + (6 - dayOfWeek)); // Saturday of current week
     
-    if (weeksCount) {
-      const dayOfWeek = today.getDay();
-      const endDate = new Date(today);
-      endDate.setDate(today.getDate() + (6 - dayOfWeek));
-      
-      const startDate = new Date(endDate);
+    let startDate;
+    if (createdAt) {
+      const createdDate = new Date(createdAt);
+      // Align to Sunday of the creation week
+      startDate = new Date(createdDate);
+      startDate.setDate(createdDate.getDate() - createdDate.getDay());
+    } else if (weeksCount) {
+      startDate = new Date(endDate);
       startDate.setDate(endDate.getDate() - (weeksCount * 7 - 1));
-
-      const weeks = [];
-      let currentWeek = [];
-      let currentDate = new Date(startDate);
-
-      while (currentDate <= endDate) {
-        currentWeek.push(formatDate(currentDate));
-        if (currentWeek.length === 7) {
-          weeks.push(currentWeek);
-          currentWeek = [];
-        }
-        currentDate.setDate(currentDate.getDate() + 1);
-      }
-      return weeks;
+    } else {
+      // Default to 16 weeks ago
+      startDate = new Date(endDate);
+      startDate.setDate(endDate.getDate() - (16 * 7 - 1));
     }
 
-    const currentYear = today.getFullYear();
-    const startDate = new Date(currentYear, 0, 1); // Jan 1st
-    const endDate = new Date(currentYear, 11, 31); // Dec 31st
+    // Ensure minimum 4 weeks grid length for layout aesthetic
+    const diffTime = endDate.getTime() - startDate.getTime();
+    const diffDays = Math.round(diffTime / (1000 * 3600 * 24));
+    if (diffDays < 27) {
+      startDate = new Date(endDate);
+      startDate.setDate(endDate.getDate() - 27);
+    }
 
-    // Adjust to start on a Sunday
-    const startDay = startDate.getDay();
-    startDate.setDate(startDate.getDate() - startDay);
-
+    const createdYMD = createdAt ? formatDate(createdAt) : null;
     const weeks = [];
     let currentWeek = [];
     let currentDate = new Date(startDate);
 
-    while (currentDate <= endDate || currentWeek.length > 0) {
+    while (currentDate <= endDate) {
+      const ymd = formatDate(currentDate);
+      // If date is prior to creation date in the first week, mark as null (hidden)
+      if (createdYMD && ymd < createdYMD) {
+        currentWeek.push(null);
+      } else {
+        currentWeek.push(ymd);
+      }
+
       if (currentWeek.length === 7) {
         weeks.push(currentWeek);
         currentWeek = [];
       }
-      
-      if (currentDate > endDate && currentWeek.length === 0) {
-        break;
-      }
-
-      if (currentDate.getFullYear() !== currentYear) {
-        currentWeek.push(null);
-      } else {
-        currentWeek.push(formatDate(currentDate));
-      }
-      
       currentDate.setDate(currentDate.getDate() + 1);
     }
-    
+
     if (currentWeek.length > 0) {
       while (currentWeek.length < 7) {
         currentWeek.push(null);
       }
       weeks.push(currentWeek);
     }
+
     return weeks;
-  }, [weeksCount]);
+  }, [createdAt, weeksCount]);
 
   const getColorStyle = (dateString) => {
     if (!dateString) return {};
@@ -133,6 +132,17 @@ export default function Heatmap({ logs = [], targetValue = 1, onDayClick, weeksC
     return `${formatted} \nHoàn thành: ${val} / ${targetValue}`;
   };
 
+  const handleCellClick = (e, day) => {
+    // Prevent accidental toggles on mobile / touch screens (< 768px)
+    if (typeof window !== 'undefined' && window.matchMedia('(max-width: 768px)').matches) {
+      return;
+    }
+
+    if (day && day <= todayStr && onDayClick) {
+      onDayClick(day);
+    }
+  };
+
   return (
     <div className={styles.heatmapContainer}>
       {grid.map((week, i) => (
@@ -144,11 +154,7 @@ export default function Heatmap({ logs = [], targetValue = 1, onDayClick, weeksC
               style={getColorStyle(day)}
               onMouseEnter={(e) => handleMouseEnter(e, day)}
               onMouseLeave={handleMouseLeave}
-              onClick={() => {
-                if (day && day <= todayStr && onDayClick) {
-                  onDayClick(day);
-                }
-              }}
+              onClick={(e) => handleCellClick(e, day)}
             />
           ))}
         </div>

@@ -68,7 +68,13 @@ export default function HabitDetailModal({ habit, logs, stats, onClose, onEdit, 
 
         <div className={styles.heatmapWrapper}>
           <h4 className={styles.sectionTitle}>Lịch sử hoạt động</h4>
-          <Heatmap logs={logs} targetValue={habit.target_value} onDayClick={handleToggleDay} />
+          <Heatmap 
+            logs={logs} 
+            targetValue={habit.target_value} 
+            createdAt={habit.created_at}
+            color={habit.color}
+            onDayClick={handleToggleDay} 
+          />
         </div>
       </div>
     </div>
