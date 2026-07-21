@@ -154,13 +154,24 @@
   }
   
   .headerTop {
-    flex-direction: row;
-    justify-content: space-between;
-    align-items: center;
+    flex-direction: column;
+    align-items: flex-start;
     width: 100%;
     gap: 12px;
   }
   
+  .headerTop > div:last-child {
+    width: 100%;
+    flex-wrap: wrap;
+    gap: 8px !important;
+  }
+
+  .headerTop .btn {
+    padding: 8px 12px;
+    height: 38px;
+    font-size: 13px;
+  }
+
   .logoText {
     font-size: 1.5rem;
   }

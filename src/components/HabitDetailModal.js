@@ -5,8 +5,11 @@ import styles from './HabitDetailModal.module.css';
 import { supabase } from '@/lib/supabase';
 import { useState } from 'react';
 
+import { calculateHabitStats } from '@/lib/habitStats';
+
 export default function HabitDetailModal({ habit, logs, stats, onClose, onEdit, onLogsChanged }) {
   const [loading, setLoading] = useState(false);
+  const computedStats = calculateHabitStats(logs);
 
   const handleToggleDay = async (dateString) => {
     const todayDateStr = new Date(new Date().getTime() - new Date().getTimezoneOffset() * 60000).toISOString().split('T')[0];
@@ -48,14 +51,18 @@ export default function HabitDetailModal({ habit, logs, stats, onClose, onEdit, 
 
         <div className={styles.stats}>
           <div className={styles.statItem}>
-            <span className={styles.statLabel}>Streak:</span>
-            <span className={styles.statValue} style={{ color: 'var(--build-color)' }}>
-              {stats.current_streak}
+            <span className={styles.statLabel}>Current Streak:</span>
+            <span className={styles.statValue} style={{ color: 'var(--build-color, #10b981)' }}>
+              {computedStats.currentStreak} ngày
             </span>
           </div>
           <div className={styles.statItem}>
-            <span className={styles.statLabel}>Best:</span>
-            <span className={styles.statValue}>{stats.longest_streak}</span>
+            <span className={styles.statLabel}>Kỷ lục (Best):</span>
+            <span className={styles.statValue}>{computedStats.longestStreak} ngày</span>
+          </div>
+          <div className={styles.statItem}>
+            <span className={styles.statLabel}>Nhất quán (30 ngày):</span>
+            <span className={styles.statValue}>{computedStats.consistency30}%</span>
           </div>
         </div>
 

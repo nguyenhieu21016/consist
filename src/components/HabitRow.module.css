@@ -19,6 +19,18 @@
   transform: translate(-2px, -2px);
 }
 
+.card.cardChecked {
+  background: #dcfce7;
+}
+
+.card.cardChecked:hover {
+  background: #bbf7d0;
+}
+
+.card.cardChecked .badge {
+  background: #ffffff;
+}
+
 .card:active {
   transform: translate(5px, 5px);
   box-shadow: 0px 0px 0px #000000;
@@ -54,6 +66,28 @@
   font-weight: 500;
   margin: 0;
   line-height: 1.4;
+}
+
+.statsBadges {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 6px;
+  flex-wrap: wrap;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  background: #f3f4f6;
+  border: 1.5px solid #000000;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #111827;
+  box-shadow: 1.5px 1.5px 0px #000000;
 }
 
 .actions {

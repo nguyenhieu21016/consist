@@ -6,11 +6,15 @@ import { Check, Plus } from 'lucide-react';
 import HabitDetailModal from './HabitDetailModal';
 import Heatmap from './Heatmap';
 
-export default function HabitRow({ habit, selectedDate, onEdit }) {
+import { calculateHabitStats } from '@/lib/habitStats';
+
+export default function HabitRow({ habit, selectedDate, onEdit, onLogsChanged }) {
   const [logs, setLogs] = useState([]);
   const [stats, setStats] = useState(habit.habit_stats?.[0] || { current_streak: 0, longest_streak: 0, strength_score: 0 });
   const [loading, setLoading] = useState(false);
   const [showDetail, setShowDetail] = useState(false);
+
+  const computedStats = calculateHabitStats(logs);
 
   useEffect(() => {
     fetchLogs();
@@ -31,6 +35,7 @@ export default function HabitRow({ habit, selectedDate, onEdit }) {
 
     if (!error && data) {
       setLogs(data);
+      if (onLogsChanged) onLogsChanged();
     }
   };
 
@@ -69,6 +74,16 @@ export default function HabitRow({ habit, selectedDate, onEdit }) {
             longest_streak: Math.max(stats.longest_streak, stats.current_streak + 1)
           });
         }
+
+        if (typeof window !== 'undefined') {
+          import('canvas-confetti').then(confettiModule => {
+            confettiModule.default({
+              particleCount: 60,
+              spread: 70,
+              origin: { y: 0.7 }
+            });
+          });
+        }
       }
     }
     setLoading(false);
@@ -98,7 +113,7 @@ export default function HabitRow({ habit, selectedDate, onEdit }) {
 
   return (
     <>
-      <div className={styles.card} onClick={() => setShowDetail(true)}>
+      <div className={`${styles.card} ${hasCheckedIn ? styles.cardChecked : ''}`} onClick={() => setShowDetail(true)}>
         <div className={styles.cardHeader}>
           <div className={styles.info}>
             <h3 className={styles.title}>{habit.title}</h3>
@@ -107,6 +122,17 @@ export default function HabitRow({ habit, selectedDate, onEdit }) {
             ) : (
               <p className={styles.description}>Mục tiêu: {habit.target_value} {habit.unit}</p>
             )}
+            <div className={styles.statsBadges}>
+              <span className={styles.badge} title="Chuỗi liên tục hiện tại">
+                Streak: {computedStats.currentStreak}d
+              </span>
+              <span className={styles.badge} title="Kỷ lục chuỗi dài nhất">
+                Best: {computedStats.longestStreak}d
+              </span>
+              <span className={styles.badge} title="Tỷ lệ kiên trì 30 ngày gần đây">
+                Score: {computedStats.consistency30}%
+              </span>
+            </div>
           </div>
           
           <div className={styles.actions}>

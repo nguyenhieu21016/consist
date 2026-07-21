@@ -3,8 +3,12 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import AddHabit from './AddHabit';
 import HabitRow from './HabitRow';
+import WeeklyReportModal from './WeeklyReportModal';
+import AchievementsModal from './AchievementsModal';
+import ShopModal from './ShopModal';
 import styles from './Dashboard.module.css';
-import { Plus, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Plus, ChevronLeft, ChevronRight, BarChart2, Award, ShoppingBag } from 'lucide-react';
+import { calculateGamificationData } from '@/lib/gamification';
 
 const getWeekDays = (baseDate) => {
   const days = [];
@@ -19,9 +23,14 @@ const getWeekDays = (baseDate) => {
 
 export default function Dashboard({ session }) {
   const [habits, setHabits] = useState([]);
+  const [allLogs, setAllLogs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showAddModal, setShowAddModal] = useState(false);
+  const [showReportModal, setShowReportModal] = useState(false);
+  const [showAchievementsModal, setShowAchievementsModal] = useState(false);
+  const [showShopModal, setShowShopModal] = useState(false);
   const [editHabit, setEditHabit] = useState(null);
+  const [spentCoins, setSpentCoins] = useState(0);
 
   const [baseDate, setBaseDate] = useState(new Date());
   
@@ -36,20 +45,35 @@ export default function Dashboard({ session }) {
   const weekDays = getWeekDays(baseDate);
 
   useEffect(() => {
-    fetchHabits();
+    fetchData();
+    if (typeof window !== 'undefined') {
+      const savedSpent = parseInt(localStorage.getItem('consist_spent_coins') || '0', 10);
+      setSpentCoins(savedSpent);
+    }
   }, []);
 
-  const fetchHabits = async () => {
-    const { data, error } = await supabase
+  const fetchData = async () => {
+    const { data: habitsData } = await supabase
       .from('habits')
       .select('*, habit_stats(*)')
       .order('created_at', { ascending: false });
+
+    const { data: logsData } = await supabase
+      .from('habit_logs')
+      .select('*');
     
-    if (!error && data) {
-      setHabits(data);
+    if (habitsData) setHabits(habitsData);
+    if (logsData) setAllLogs(logsData);
+    if (typeof window !== 'undefined') {
+      const savedSpent = parseInt(localStorage.getItem('consist_spent_coins') || '0', 10);
+      setSpentCoins(savedSpent);
     }
     setLoading(false);
   };
+
+  const gamificationData = calculateGamificationData(habits, allLogs);
+  const totalEarnedCoins = gamificationData.totalEarnedCoins;
+  const availableCoins = Math.max(0, totalEarnedCoins - spentCoins);
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -66,6 +90,29 @@ export default function Dashboard({ session }) {
             </div>
             
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <button 
+                onClick={() => setShowShopModal(true)}
+                className="btn btn-outline"
+                title="Cửa hàng Coin & Thẻ Đóng Băng"
+                style={{ backgroundColor: '#fffdf5', borderColor: '#000' }}
+              >
+                <ShoppingBag size={18} color="#f59e0b" /> {availableCoins} Coins
+              </button>
+              <button 
+                onClick={() => setShowAchievementsModal(true)}
+                className="btn btn-outline"
+                title="Xem Cấp độ & Thành tựu"
+                style={{ backgroundColor: '#fffdf0', borderColor: '#000' }}
+              >
+                <Award size={18} color="#10b981" /> Lv.{gamificationData.level} ({gamificationData.totalXP} XP)
+              </button>
+              <button 
+                onClick={() => setShowReportModal(true)} 
+                className="btn btn-outline"
+                title="Xem báo cáo hiệu suất tuần"
+              >
+                <BarChart2 size={18} /> Báo cáo
+              </button>
               <button 
                 onClick={() => setShowAddModal(true)} 
                 className="btn btn-primary"
@@ -133,7 +180,8 @@ export default function Dashboard({ session }) {
                   key={`${habit.id}-${selectedDate}`} 
                   habit={habit} 
                   selectedDate={selectedDate}
-                  onEdit={() => setEditHabit(habit)} 
+                  onEdit={() => setEditHabit(habit)}
+                  onLogsChanged={fetchData}
                 />
               ))
             ) : (
@@ -154,13 +202,44 @@ export default function Dashboard({ session }) {
             }} 
             onHabitAdded={(newHabit) => {
               setHabits([{...newHabit, habit_stats: [{current_streak: 0, longest_streak: 0, strength_score: 0}]}, ...habits]);
+              fetchData();
             }}
             onHabitUpdated={(updatedHabit) => {
               setHabits(habits.map(h => h.id === updatedHabit.id ? { ...h, ...updatedHabit } : h));
+              fetchData();
             }}
             onHabitDeleted={(deletedId) => {
               setHabits(habits.filter(h => h.id !== deletedId));
+              fetchData();
             }}
+          />
+        )}
+
+        {showReportModal && (
+          <WeeklyReportModal 
+            habits={habits} 
+            onClose={() => setShowReportModal(false)} 
+          />
+        )}
+
+        {showAchievementsModal && (
+          <AchievementsModal 
+            gamificationData={gamificationData} 
+            onClose={() => setShowAchievementsModal(false)} 
+          />
+        )}
+
+        {showShopModal && (
+          <ShopModal 
+            totalEarnedCoins={totalEarnedCoins} 
+            maxStreakEver={gamificationData.maxStreakEver}
+            habits={habits}
+            allLogs={allLogs}
+            session={session}
+            onClose={() => {
+              setShowShopModal(false);
+              fetchData();
+            }} 
           />
         )}
       </main>
