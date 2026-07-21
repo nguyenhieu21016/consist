@@ -1,17 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
-  <!-- Solid 3D Extrusion Shadow Layers -->
-  <rect x="88" y="88" width="360" height="360" rx="72" fill="#000000"/>
-  <rect x="84" y="84" width="360" height="360" rx="72" fill="#000000"/>
-  <rect x="80" y="80" width="360" height="360" rx="72" fill="#000000"/>
-  <rect x="76" y="76" width="360" height="360" rx="72" fill="#000000"/>
-  <rect x="72" y="72" width="360" height="360" rx="72" fill="#000000"/>
-  <rect x="68" y="68" width="360" height="360" rx="72" fill="#000000"/>
-  <rect x="64" y="64" width="360" height="360" rx="72" fill="#000000"/>
-  <rect x="60" y="60" width="360" height="360" rx="72" fill="#000000"/>
-
-  <!-- Main Green Front Card -->
-  <rect x="56" y="56" width="360" height="360" rx="72" fill="#10b981" stroke="#000000" stroke-width="28"/>
-
+  <!-- Full Green Rounded Container without border or shadow -->
+  <rect x="0" y="0" width="512" height="512" rx="110" fill="#10b981"/>
   <!-- Crisp White Checkmark -->
-  <path d="M150 235 L225 310 L330 175" fill="none" stroke="#ffffff" stroke-width="48" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M140 260 L220 340 L372 170" fill="none" stroke="#ffffff" stroke-width="52" stroke-linecap="round" stroke-linejoin="round"/>
 </svg>
